@@ -15,7 +15,6 @@ class _AdminManageStaffState extends State<AdminManageStaff>
     with TickerProviderStateMixin {
   int _currentIndex = 3;
   String _searchQuery = '';
-  bool _isSearching = false;
   String _filterBy =
       'all'; // all, active, inactive, managers, front_desk, housekeeping, maintenance
   final TextEditingController _searchController = TextEditingController();
@@ -125,121 +124,263 @@ class _AdminManageStaffState extends State<AdminManageStaff>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        elevation: 0,
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'Search staff by name, email, or position...',
-                  hintStyle: TextStyle(color: Colors.white70),
-                  border: InputBorder.none,
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value.toLowerCase();
-                  });
-                },
-              )
-            : const Text('Manage Staff'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchController.clear();
-                  _searchQuery = '';
-                }
-              });
-            },
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list),
-            onSelected: (value) {
-              setState(() {
-                _filterBy = value;
-              });
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'all', child: Text('All Staff')),
-              const PopupMenuItem(value: 'active', child: Text('Active Staff')),
-              const PopupMenuItem(
-                value: 'inactive',
-                child: Text('Inactive Staff'),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(value: 'managers', child: Text('Managers')),
-              const PopupMenuItem(
-                value: 'front_desk',
-                child: Text('Front Desk'),
-              ),
-              const PopupMenuItem(
-                value: 'housekeeping',
-                child: Text('Housekeeping'),
-              ),
-              const PopupMenuItem(
-                value: 'maintenance',
-                child: Text('Maintenance'),
-              ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => setState(() {}),
-          ),
-        ],
-      ),
-      body: Column(
+      backgroundColor: Colors.grey[100],
+      body: Row(
         children: [
-          // Stats Header
+          // Sidebar Navigation
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E88E5),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            width: 280,
+            color: const Color(0xFF1E88E5),
+            child: Column(
               children: [
-                _buildStatCard(
-                  "Total Staff",
-                  staffMembers.length.toString(),
-                  Icons.people,
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  color: const Color(0xFF1565C0),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Admin Dashboard',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Staff Management',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                _buildStatCard(
-                  "Active",
-                  staffMembers.where((s) => s.isActive).length.toString(),
-                  Icons.check_circle,
+                const SizedBox(height: 16),
+                // Navigation Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: [
+                      _buildSidebarItem(
+                        icon: Icons.dashboard_outlined,
+                        label: 'Dashboard',
+                        isSelected: _currentIndex == 0,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminDashboard(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.hotel_outlined,
+                        label: 'Manage Hotels',
+                        isSelected: _currentIndex == 1,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminManageHotels(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.book_outlined,
+                        label: 'View Bookings',
+                        isSelected: _currentIndex == 2,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminViewAllBookings(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.badge_outlined,
+                        label: 'Manage Staff',
+                        isSelected: _currentIndex == 3,
+                        onTap: () {
+                          setState(() => _currentIndex = 3);
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.settings_outlined,
+                        label: 'Settings',
+                        isSelected: _currentIndex == 4,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminSettingsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                _buildStatCard("Departments", "4", Icons.business),
               ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // Main Content
+          // Main Content Area
           Expanded(
-            child:
+            child: Column(
+              children: [
+                // Top App Bar
+                Container(
+                  height: 70,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Manage Staff',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E88E5),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Container(
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Search staff by name, email, or position...',
+                              prefixIcon: Icon(Icons.search, color: Color(0xFF1E88E5)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value.toLowerCase();
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      PopupMenuButton<String>(
+                        icon: Row(
+                          children: [
+                            const Icon(Icons.filter_list, color: Color(0xFF1E88E5)),
+                            const SizedBox(width: 4),
+                            Text(
+                              _filterBy == 'all' ? 'All' : _filterBy.replaceAll('_', ' '),
+                              style: const TextStyle(color: Color(0xFF1E88E5)),
+                            ),
+                          ],
+                        ),
+                        onSelected: (value) {
+                          setState(() {
+                            _filterBy = value;
+                          });
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(value: 'all', child: Text('All Staff')),
+                          const PopupMenuItem(value: 'active', child: Text('Active Staff')),
+                          const PopupMenuItem(value: 'inactive', child: Text('Inactive Staff')),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem(value: 'managers', child: Text('Managers')),
+                          const PopupMenuItem(value: 'front_desk', child: Text('Front Desk')),
+                          const PopupMenuItem(value: 'housekeeping', child: Text('Housekeeping')),
+                          const PopupMenuItem(value: 'maintenance', child: Text('Maintenance')),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh, color: Color(0xFF1E88E5)),
+                        onPressed: () => setState(() {}),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddStaffDialog(),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text(
+                          'Add Staff',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E88E5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Stats Cards
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildDesktopStatCard(
+                          'Total Staff',
+                          staffMembers.length.toString(),
+                          Icons.people,
+                          Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDesktopStatCard(
+                          'Active',
+                          staffMembers.where((s) => s.isActive).length.toString(),
+                          Icons.check_circle,
+                          Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDesktopStatCard(
+                          'Departments',
+                          '4',
+                          Icons.business,
+                          Colors.orange,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Main Content
+                Expanded(
+                  child:
                 filteredStaff.isEmpty &&
                     (_searchQuery.isNotEmpty || _filterBy != 'all')
                 ? _buildEmptySearchState()
                 : filteredStaff.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(24),
                     itemCount: filteredStaff.length,
                     itemBuilder: (context, index) {
                       final staff = filteredStaff[index];
@@ -474,119 +615,102 @@ class _AdminManageStaffState extends State<AdminManageStaff>
                       );
                     },
                   ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddStaffDialog(),
-        backgroundColor: const Color(0xFF1E88E5),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            if (index == _currentIndex) return;
+    );
+  }
 
-            switch (index) {
-              case 0:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminDashboard(),
-                  ),
-                );
-                break;
-              case 1:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminManageHotels(),
-                  ),
-                );
-                break;
-              case 2:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminViewAllBookings(),
-                  ),
-                );
-                break;
-              case 3:
-                break;
-              case 4:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminSettingsPage(),
-                  ),
-                );
-                break;
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF1E88E5),
-          unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.white,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.hotel_outlined),
-              label: 'Hotels',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.book_outlined),
-              label: 'Bookings',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Users',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              label: 'Settings',
-            ),
-          ],
+  Widget _buildSidebarItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: Colors.white,
+          size: 24,
+        ),
+        title: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon) {
+  Widget _buildDesktopStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 22),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 28,
             ),
           ),
-          Text(
-            title,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
         ],
       ),

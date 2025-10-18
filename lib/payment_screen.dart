@@ -273,6 +273,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget _buildAmountInputField() {
     return TextField(
       controller: _amountController,
+      enabled: false,
+      readOnly: true,
       textAlign: TextAlign.start,
       style: const TextStyle(
         fontSize: 18,

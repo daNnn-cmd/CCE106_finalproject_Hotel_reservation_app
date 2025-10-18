@@ -16,7 +16,6 @@ class AdminManageHotels extends StatefulWidget {
 class _AdminManageHotelsState extends State<AdminManageHotels> {
   int selectedIndex = 1;
   String _searchQuery = '';
-  bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
 
   final CollectionReference _hotelsCollection = FirebaseFirestore.instance
@@ -446,50 +445,190 @@ class _AdminManageHotelsState extends State<AdminManageHotels> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        elevation: 0,
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'Search hotels or locations...',
-                  hintStyle: TextStyle(color: Colors.white70),
-                  border: InputBorder.none,
+      backgroundColor: Colors.grey[100],
+      body: Row(
+        children: [
+          // Sidebar Navigation
+          Container(
+            width: 280,
+            color: const Color(0xFF1E88E5),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  color: const Color(0xFF1565C0),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Admin Dashboard',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Hotel Management',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value.toLowerCase();
-                  });
-                },
-              )
-            : const Text('Manage Hotels'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchController.clear();
-                  _searchQuery = '';
-                }
-              });
-            },
+                const SizedBox(height: 16),
+                // Navigation Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: [
+                      _buildSidebarItem(
+                        icon: Icons.dashboard_outlined,
+                        label: 'Dashboard',
+                        isSelected: selectedIndex == 0,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminDashboard(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.hotel_outlined,
+                        label: 'Manage Hotels',
+                        isSelected: selectedIndex == 1,
+                        onTap: () {
+                          setState(() => selectedIndex = 1);
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.book_outlined,
+                        label: 'View Bookings',
+                        isSelected: selectedIndex == 2,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminViewAllBookings(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.person_outline,
+                        label: 'Manage Guests',
+                        isSelected: selectedIndex == 3,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminManageGuests(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSidebarItem(
+                        icon: Icons.settings_outlined,
+                        label: 'Settings',
+                        isSelected: selectedIndex == 4,
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AdminSettingsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showHotelForm(context),
-          ),
-        ],
-      ),
-
-      body: StreamBuilder<QuerySnapshot>(
+          // Main Content Area
+          Expanded(
+            child: Column(
+              children: [
+                // Top App Bar
+                Container(
+                  height: 70,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Manage Hotels',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E88E5),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Container(
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Search hotels or locations...',
+                              prefixIcon: Icon(Icons.search, color: Color(0xFF1E88E5)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value.toLowerCase();
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _showHotelForm(context),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text(
+                          'Add Hotel',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E88E5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Content
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
         stream: _hotelsCollection.snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -604,13 +743,18 @@ class _AdminManageHotelsState extends State<AdminManageHotels> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
+          return GridView.builder(
+            padding: const EdgeInsets.all(32),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 24,
+              mainAxisSpacing: 24,
+              childAspectRatio: 0.85,
+            ),
             itemCount: filteredHotels.length,
             itemBuilder: (context, index) {
               final hotel = filteredHotels[index];
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -634,12 +778,12 @@ class _AdminManageHotelsState extends State<AdminManageHotels> {
                           ),
                           child: Image.network(
                             hotel.imageUrl,
-                            height: 200,
+                            height: 180,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
-                                  height: 200,
+                                  height: 180,
                                   color: Colors.grey[200],
                                   child: Icon(
                                     Icons.broken_image,
@@ -688,121 +832,98 @@ class _AdminManageHotelsState extends State<AdminManageHotels> {
                     ),
 
                     // Hotel Info
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      hotel.name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          size: 16,
-                                          color: Colors.grey[600],
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            hotel.location,
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              hotel.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on,
+                                  size: 14,
+                                  color: Colors.grey[600],
                                 ),
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF1E88E5,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  "\₱${hotel.price.toStringAsFixed(0)}/night",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1E88E5),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    hotel.location,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          Text(
-                            hotel.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              height: 1.4,
+                              ],
                             ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.reviews,
-                                size: 16,
-                                color: Colors.grey[600],
+                            const SizedBox(height: 8),
+                            Text(
+                              hotel.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 12,
+                                height: 1.4,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "${hotel.reviews} reviews",
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E88E5).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "\₱${hotel.price.toStringAsFixed(0)}",
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E88E5),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const Spacer(),
-
-                              // Action buttons
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: Colors.orange,
+                                const Spacer(),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.orange,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _showHotelForm(context, hotel),
+                                  tooltip: 'Edit',
                                 ),
-                                onPressed: () => _showHotelForm(context, hotel),
-                                tooltip: 'Edit Hotel',
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _deleteHotel(hotel.id),
+                                  tooltip: 'Delete',
                                 ),
-                                onPressed: () => _deleteHotel(hotel.id),
-                                tooltip: 'Delete Hotel',
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -811,88 +932,45 @@ class _AdminManageHotelsState extends State<AdminManageHotels> {
             },
           );
         },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
 
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
+  Widget _buildSidebarItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: Colors.white,
+          size: 24,
         ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF1E88E5),
-          unselectedItemColor: Colors.grey[400],
-          currentIndex: selectedIndex,
-          onTap: (index) {
-            setState(() {
-              selectedIndex = index;
-            });
-            switch (index) {
-              case 0:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminDashboard(),
-                  ),
-                );
-                break;
-              case 1:
-                // Current screen
-                break;
-              case 2:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminViewAllBookings(),
-                  ),
-                );
-                break;
-              case 3:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminManageGuests(),
-                  ),
-                );
-                break;
-              case 4:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminSettingsPage(),
-                  ),
-                );
-                break;
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.hotel_outlined),
-              label: 'Hotels',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.book_outlined),
-              label: 'Bookings',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Users',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              label: 'Settings',
-            ),
-          ],
+        title: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );
